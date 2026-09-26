@@ -1,2 +1,161 @@
+import pandas as pd
+
+# =====================================================
 # Bengaluru Survey Data Analysis
-# Python analysis will be added here as the project develops.
+# =====================================================
+
+# 1. Load dataset
+df = pd.read_excel("../data/Bengaluru_Survey_Public_Ward_Analysis.xlsx")
+
+print("Dataset shape:", df.shape)
+print("\nColumns:")
+print(df.columns)
+
+
+# =====================================================
+# 2. Data Quality Check
+# =====================================================
+
+print("\nMissing values:")
+print(df.isnull().sum())
+
+
+# =====================================================
+# 3. Data Cleaning
+# =====================================================
+
+clean_df = df.copy()
+
+# Correct the Excel date-format issue for Ward 161
+clean_df.loc[
+    (clean_df["Ward Number"] == 161) &
+    (clean_df["Ward Name"] == "Hosakerehalli"),
+    "Commercial"
+] = 1239
+
+
+# =====================================================
+# 4. Validate Balance Left
+# =====================================================
+
+clean_df["Calculated Balance"] = (
+    clean_df["Total Building Count"]
+    - clean_df["Verification Done"]
+)
+
+balance_errors = clean_df[
+    clean_df["Balance Left"] != clean_df["Calculated Balance"]
+]
+
+print("\nBalance validation errors:", len(balance_errors))
+
+
+# =====================================================
+# 5. Validate Verification Percentage
+# =====================================================
+
+clean_df["Calculated % Done"] = (
+    clean_df["Verification Done"]
+    / clean_df["Total Building Count"]
+    * 100
+)
+
+percentage_errors = clean_df[
+    abs(clean_df["% Done"] - clean_df["Calculated % Done"]) > 0.01
+]
+
+print("Percentage validation errors:", len(percentage_errors))
+
+
+# =====================================================
+# 6. Overall Verification Performance
+# =====================================================
+
+overall_verification = (
+    clean_df["Verification Done"].sum()
+    / clean_df["Total Building Count"].sum()
+    * 100
+)
+
+print("\nOverall verification percentage:",
+      round(overall_verification, 2), "%")
+
+
+# =====================================================
+# 7. Ward Count by Corporation
+# =====================================================
+
+ward_count = (
+    clean_df.groupby("Corporation")["Ward Number"]
+    .count()
+)
+
+print("\nWard count by corporation:")
+print(ward_count)
+
+
+# =====================================================
+# 8. Recorded Positive Balance by Division
+# =====================================================
+
+division_backlog = (
+    clean_df.groupby("Division")["Balance Left"]
+    .sum()
+    .sort_values(ascending=False)
+)
+
+positive_backlog = division_backlog[
+    division_backlog > 0
+]
+
+print("\nRecorded positive balance by division:")
+print(positive_backlog)
+
+
+# =====================================================
+# 9. Top Wards by Recorded Positive Balance
+# =====================================================
+
+top_backlog_wards = (
+    clean_df[clean_df["Balance Left"] > 0]
+    .sort_values("Balance Left", ascending=False)
+)
+
+print("\nTop 10 wards by recorded positive balance:")
+
+print(
+    top_backlog_wards[
+        ["Ward Number", "Ward Name", "Division", "Balance Left"]
+    ].head(10)
+)
+
+
+# =====================================================
+# 10. Property Type Totals
+# =====================================================
+
+property_totals = clean_df[
+    [
+        "Residential Households",
+        "Commercial",
+        "Apartments"
+    ]
+].sum()
+
+print("\nProperty type totals:")
+print(property_totals)
+
+
+# =====================================================
+# 11. Remove Temporary Validation Columns
+# =====================================================
+
+clean_df = clean_df.drop(
+    columns=[
+        "Calculated Balance",
+        "Calculated % Done"
+    ]
+)
+
+print("\nFinal cleaned dataset shape:",
+      clean_df.shape)
