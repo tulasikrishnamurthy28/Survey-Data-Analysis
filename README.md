@@ -130,3 +130,19 @@ The project also validated the calculated `Balance Left` and verification percen
 ### 5. Data Cleaning
 
 During data preparation, an Excel formatting issue was identified in the `Commercial` field for Ward 161 (Hosakerehalli). The underlying numeric value was restored and the cleaned dataset was validated before analysis.
+
+## 📈 Project Status
+
+🚧 **Project in Progress**
+
+The project currently includes:
+
+- Cleaned ward-level survey dataset
+- SQL analysis queries
+- Python data analysis
+- Data-quality validation
+- Survey performance analysis
+- Initial visualizations
+- Key analytical findings
+
+Further improvements will include additional visualizations, notebook documentation, and final project insights.
