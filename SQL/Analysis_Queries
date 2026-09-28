@@ -1,0 +1,70 @@
+-- Bengaluru Survey Data Analysis
+-- SQL analysis queries
+
+-- 1. Overall verification performance
+SELECT
+    SUM(`Verification Done`) AS total_verification_done,
+    SUM(`Total Building Count`) AS total_buildings,
+    ROUND(
+        SUM(`Verification Done`) /
+        SUM(`Total Building Count`) * 100,
+        2
+    ) AS overall_verification_percentage
+FROM survey_data;
+
+
+-- 2. Total properties by type
+SELECT
+    SUM(`Residential Households`) AS total_residential_households,
+    SUM(`Commercial`) AS total_commercial,
+    SUM(`Apartments`) AS total_apartments
+FROM survey_data;
+
+
+-- 3. Top 10 wards by remaining balance
+SELECT
+    `Ward Number`,
+    `Ward Name`,
+    `Division`,
+    `Balance Left`
+FROM survey_data
+WHERE `Balance Left` > 0
+ORDER BY `Balance Left` DESC
+LIMIT 10;
+
+
+-- 4. Positive balance by division
+SELECT
+    `Division`,
+    SUM(`Balance Left`) AS total_balance_left
+FROM survey_data
+WHERE `Balance Left` > 0
+GROUP BY `Division`
+ORDER BY total_balance_left DESC;
+
+
+-- 5. Verification performance by corporation
+SELECT
+    `Corporation`,
+    SUM(`Verification Done`) AS total_verified,
+    SUM(`Total Building Count`) AS total_buildings,
+    ROUND(
+        SUM(`Verification Done`) /
+        SUM(`Total Building Count`) * 100,
+        2
+    ) AS verification_percentage
+FROM survey_data
+GROUP BY `Corporation`
+ORDER BY verification_percentage DESC;
+
+
+-- 6. Data quality check: wards where verification exceeds total buildings
+SELECT
+    `Ward Number`,
+    `Ward Name`,
+    `Total Building Count`,
+    `Verification Done`,
+    `% Done`
+FROM survey_data
+WHERE `Verification Done` > `Total Building Count`
+ORDER BY `Verification Done` - `Total Building Count` DESC;
